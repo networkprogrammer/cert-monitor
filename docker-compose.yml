@@ -2,6 +2,7 @@ services:
   cert-scanner:
     build: ./cert_monitor
     command: python3 main.py
+    container_name: cert-scanner
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
@@ -31,6 +32,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - db-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "certuser"]
       interval: 10s
@@ -41,8 +43,11 @@ services:
     image: prom/prometheus:latest
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
     ports:
       - "9090:9090"
+    command:
+      - "--storage.tsdb.retention.time=60d"
 
   grafana:
     image: grafana/grafana:latest
@@ -84,3 +89,4 @@ services:
 
 volumes:
   db-data:
+  prometheus-data:

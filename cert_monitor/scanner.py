@@ -35,28 +35,38 @@ def send_alert(subject, body):
         logging.info(f"LOG: {subject} - {body}")
 
 def get_cert_chain(domain, port=443):
-    ctx = SSL.Context(SSL.TLS_CLIENT_METHOD)
-    sock = socket.create_connection((domain, port))
-    ssl_conn = SSL.Connection(ctx, sock)
-    ssl_conn.set_tlsext_host_name(domain.encode())
-    ssl_conn.set_connect_state()
-    ssl_conn.do_handshake()
+    try:
+        ctx = SSL.Context(SSL.TLS_CLIENT_METHOD)
+        sock = socket.create_connection((domain, port))
+        ssl_conn = SSL.Connection(ctx, sock)
+        ssl_conn.set_tlsext_host_name(domain.encode())
+        ssl_conn.set_connect_state()
+        ssl_conn.do_handshake()
 
-    certs = ssl_conn.get_peer_cert_chain()
-    logging.info(f"Server returned {len(certs)} certificate(s) for {domain}")
+        certs = ssl_conn.get_peer_cert_chain()
+        logging.info(f"Server returned {len(certs)} certificate(s) for {domain}")
 
-    certificate_chain = []
-    for idx, cert in enumerate(certs):
-        cryptography_cert = cert.to_cryptography()
-        der = cryptography_cert.public_bytes(serialization.Encoding.DER)
-        pem = ssl.DER_cert_to_PEM_cert(der)
-        certificate_chain.append(pem)
+        certificate_chain = []
+        for idx, cert in enumerate(certs):
+            cryptography_cert = cert.to_cryptography()
+            der = cryptography_cert.public_bytes(serialization.Encoding.DER)
+            pem = ssl.DER_cert_to_PEM_cert(der)
+            certificate_chain.append(pem)
 
-        logging.debug(f"Certificate #{idx + 1} for {domain}:\n{pem}")
+            logging.debug(f"Certificate #{idx + 1} for {domain}:\n{pem}")
 
-    ssl_conn.close()
-    sock.close()
-    return certificate_chain
+        ssl_conn.close()
+        sock.close()
+        return certificate_chain
+
+    except SSL.Error as e:
+        logging.error(f"SSL error while connecting to {domain}:{port} - {e}")
+    except socket.error as e:
+        logging.error(f"Socket error while connecting to {domain}:{port} - {e}")
+    except Exception as e:
+        logging.error(f"Unexpected error while connecting to {domain}:{port} - {e}")
+
+    return []
 
 def check_certificates(domain, alert_threshold):
     logging.debug(f"Retrieving certificate chain for domain: {domain}")
