@@ -1,0 +1,1 @@
+*/5 * * * * /usr/bin/docker start docker-cert-monitor-cert-scanner-1 >> /var/log/cron.log 2>&1

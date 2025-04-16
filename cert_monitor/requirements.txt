@@ -1,0 +1,4 @@
+cryptography
+pyyaml
+psycopg2-binary
+pyopenssl

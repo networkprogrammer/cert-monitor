@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'cert_monitor'
+    static_configs:
+      - targets: ['cert-api:5000']
+
+  - job_name: 'cert-alerts'
+    static_configs:
+      - targets: ['cert-api:5000']
+    metrics_path: /alerts-metrics

@@ -1,0 +1,263 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "points",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.6.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "cert_expiry_days",
+          "legendFormat": "{{domain}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Certificate Expiry Countdown",
+      "type": "timeseries"
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Fired Alerts",
+      "gridPos": {
+        "x": 0,
+        "y": 10,
+        "h": 10,
+        "w": 24
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "displayName": ""
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "domain"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "alert_type"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "timestamp"
+            },
+            "properties": []
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "alert_type": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "domain": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "timestamp": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Value": {
+                "aggregations": [],
+                "operation": null
+              },
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "timestamp",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "pluginVersion": "11.6.0",
+      "targets": [
+        {
+          "expr": "max(last_over_time(cert_alerts[7d])) by (alert_type, domain, timestamp)",
+          "format": "table",
+          "refId": "A",
+          "editorMode": "code",
+          "range": true
+        }
+      ],
+      "datasource": {
+        "uid": "PBFA97CFB590B2093",
+        "type": "prometheus"
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        },
+        "pageSize": 5
+      }
+    }
+  ],
+  "preload": false,
+  "refresh": "10s",
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Certificate Monitoring Dashboard",
+  "uid": "cej1q6aybewowc",
+  "version": 2
+}

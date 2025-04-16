@@ -1,0 +1,86 @@
+services:
+  cert-scanner:
+    build: ./cert_monitor
+    command: python3 main.py
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./db:/db
+      - ./cert_monitor/config.yaml:/app/config.yaml
+    depends_on:
+      - cert-db
+
+  cert-api:
+    build: ./cert_api
+    command: python3 app.py
+    ports:
+      - "5001:5000"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./cert_monitor/config.yaml:/app/config.yaml
+    depends_on:
+      - cert-db
+      - cert-scanner
+
+  cert-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: certwatch
+      POSTGRES_USER: certuser
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "certuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3001:3000"
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - cert-db
+
+  cert-cron:
+    build:
+      context: ./cron
+    volumes:
+      - ./cron/crontab:/etc/crontabs/root
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./cert_monitor/config.yaml:/app/config.yaml
+    depends_on:
+      - cert-scanner
+
+  db-cleanup:
+    build:
+      context: ./cert_monitor
+    command: python3 cleanup.py
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./cert_monitor/config.yaml:/app/config.yaml
+    depends_on:
+      - cert-db
+
+volumes:
+  db-data:
