@@ -17,6 +17,7 @@ The system consists of the following components:
 - **Flask API**: Provides REST endpoints and serves the web dashboard.
 - **Prometheus**: Scrapes metrics from the Flask API.
 - **Grafana**: Visualizes certificate status and trends.
+- **Nginx**: Acts as the reverse proxy and the only entry point to all containers.
 
 ## Folder Structure
 ```
@@ -50,6 +51,7 @@ The system consists of the following components:
 │   │   │   ├── datasource.yml
 ├── prometheus/
 │   ├── prometheus.yml
+├── nginx.conf
 ├── docker-compose.yml
 ├── project-requirements.md
 ├── README.md
@@ -108,6 +110,56 @@ The Grafana dashboard includes panels for:
 - Domain scan history.
 - Certificate alerts over time.
 - Fired Alerts table panel displaying alerts grouped by `domain`, `alert_type`, and `timestamp`.
+
+## Nginx Configuration
+
+The project includes an `nginx.conf` file and an Nginx container configured in Docker. Nginx serves as the only point of entry to all the containers in the system, acting as a reverse proxy to route incoming requests to the appropriate services.
+
+### Purpose
+Nginx is used to:
+- Route HTTP traffic to the correct backend services.
+- Provide a secure and efficient entry point for all requests.
+- Enable load balancing and SSL/TLS termination (if configured).
+
+### Configuration File
+The `nginx.conf` file is located in the root directory of the project. It contains the necessary directives to:
+- Define server blocks for handling HTTP requests.
+- Configure upstream servers for routing traffic to backend services.
+- Set up SSL/TLS for secure communication (if applicable).
+
+### Docker Integration
+The Nginx container is defined in the `docker-compose.yml` file. It is pre-configured to use the `nginx.conf` file for its settings. When the Docker environment is started, the Nginx container automatically loads this configuration and begins routing traffic.
+
+### Usage
+1. Ensure Docker is installed and running on your system.
+2. Start the Docker environment using:
+   ```bash
+   docker-compose up -d
+   ```
+3. Nginx will automatically route traffic to the appropriate containers based on the configuration in `nginx.conf`.
+
+### Example Configuration
+Here is a snippet of the `nginx.conf` file:
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+
+    location / {
+        proxy_pass http://cert_api:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+### Notes
+- Update the `server_name` directive to match your domain or IP address.
+- Modify the `proxy_pass` directive to point to the appropriate backend service.
+- For SSL/TLS, additional configuration is required (e.g., specifying `listen 443 ssl;` and providing certificate paths).
+
+Refer to the official [Nginx documentation](https://nginx.org/en/docs/) for more details on advanced configurations.
 
 ## Running the Cleanup Container
 
