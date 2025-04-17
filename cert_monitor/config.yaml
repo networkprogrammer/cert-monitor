@@ -13,5 +13,6 @@ alert_channels:
     smtp_host: smtp.example.com
     smtp_port: 587
     from: alerts@example.com
-    to: team@example.com
+    to:
+      - team@example.com
     send_email: true

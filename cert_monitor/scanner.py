@@ -25,7 +25,7 @@ def send_alert(subject, body):
         msg = MIMEText(body)
         msg['Subject'] = subject
         msg['From'] = email_config['from']
-        msg['To'] = email_config['to']
+        msg['To'] = ', '.join(email_config['to'])
 
         with smtplib.SMTP(email_config['smtp_host'], email_config['smtp_port']) as server:
             # server.set_debuglevel(1)  # Enable SMTP debugging

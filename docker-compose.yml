@@ -14,8 +14,9 @@ services:
   cert-api:
     build: ./cert_api
     command: python3 app.py
-    ports:
-      - "5001:5000"
+    # Using nginx to expose cert-api
+    # ports:
+    #   - "5001:5000"
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
@@ -43,8 +44,9 @@ services:
     image: prom/prometheus:latest
     volumes:
       - ./prometheus/prometheus.yml:/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
+    # Using nginx to expose prometheus
+    # ports:
+    #   - "9090:9090"
     command:
       - "--storage.tsdb.retention.time=60d"
 
@@ -56,15 +58,17 @@ services:
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
 
-    ports:
-     - "3001:3000"
+    # Using nginx to expose Grafana
+    # ports:
+    #  - "3001:3000"
 
   adminer:
     image: adminer
     restart: always
     command: php -S 0.0.0.0:8080 -t /var/www/html
-    ports:
-      - "8080:8080"
+    #Using nginx to expose adminer
+    # ports: 
+    #   - "8080:8080"
     depends_on:
       - cert-db
 
